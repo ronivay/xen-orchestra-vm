@@ -1,0 +1,14 @@
+
+Welcome to Xen Orchestra appliance based on https://github.com/ronivay/XenOrchestraInstallerUpdater
+
+This is not official Xen Orchestra appliance and comes with no support. Report any issues to github page above.
+
+XenOrchestraInstallerUpdater is installed under /opt and can be used to update existing Xen Orchestra installation. Installations at /opt/xo
+
+self-signed ssl certificate are at /opt/ssl. You may replace these with your own if you wish.
+
+Xen Orchestra runs as a xo-server systemd service. 
+
+xo user has full sudo access. Xen Orchestra updates and service control should be run with sudo.
+
+

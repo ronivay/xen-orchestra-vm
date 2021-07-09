@@ -1,0 +1,37 @@
+---
+- name: Add inventory
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - add_host:
+        name: "{{ hostip }}"
+        groups:
+          - xenserver
+    - add_host:
+        name: "{{ frontip }}"
+        groups: 
+          - frontend
+    - add_host:
+        name: "{{ templateip }}"
+        groups:
+          - xovm
+
+- name: Create VM from template
+  hosts: xenserver
+  gather_facts: no
+  roles:
+    - role: vm-create
+
+- name: Configure VM
+  hosts: xovm
+  gather_facts: no
+  roles:
+    - role: vm-configure
+
+- name: Export and copy VM
+  hosts: xenserver
+  gather_facts: no
+  roles:
+    - role: export-and-copy-vm
+

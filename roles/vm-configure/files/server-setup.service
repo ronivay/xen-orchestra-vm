@@ -1,0 +1,19 @@
+## Xen Orchestra server setup
+##
+
+[Unit]
+Description=Xen Orchestra server setup service
+ConditionPathExists=/opt/server-setup
+After=network-online.target
+Before=systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/local/bin/server-setup.sh
+ExecStartPost=-/bin/rm -f /opt/server-setup
+ExecStartPost=-/bin/rm -f /usr/local/bin/server-setup.sh
+ExecStartPost=-/bin/rm -f /etc/systemd/system/server-setup.service
+TimeoutSec=120
+
+[Install]
+WantedBy=multi-user.target

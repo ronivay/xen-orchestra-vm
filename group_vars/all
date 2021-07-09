@@ -1,0 +1,6 @@
+---
+
+# these ip-addresses are used in play.yml to add target hosts for different actions
+templateip: 10.0.0.1
+frontip: 10.0.0.2
+hostip: 10.0.0.3

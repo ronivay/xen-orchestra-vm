@@ -1,0 +1,158 @@
+---
+
+# template is plain debian 10 with predefined ip-address and SSH-key for this automation.
+# it has xen-tools and cloud-initramfs-growroot package installed for automatic disk resize during reboot
+# whole disk is as one partition and no swap added
+
+- name: wait for SSH
+  wait_for_connection:
+    delay: 60
+    timeout: 300
+
+- name: Set hostname
+  hostname:
+    name: xo-appliance
+
+# stop logging already, we don't want to preserve logs anyway
+- name: Stop rsyslogd
+  service:
+    name: rsyslogd
+    state: stopped
+
+- name: Update and upgrade apt packages
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: Install resolvconf and curl
+  apt:
+    name: ['resolvconf', 'curl']
+    state: present
+
+- name: Clone XenOrchestraInstallerUpdater
+  git:
+    repo: "https://github.com/ronivay/XenOrchestraInstallerUpdater.git"
+    dest: /opt/XenOrchestraInstallerUpdater
+
+- name: Copy xo-install.cfg
+  copy:
+    src: xo-install.cfg
+    dest: /opt/XenOrchestraInstallerUpdater/xo-install.cfg
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create /opt/ssl
+  file:
+    path: /opt/ssl
+    state: directory
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Create SSL-certificate (recreated on first reboot of appliance)
+  shell: openssl req -nodes -x509 -newkey rsa:4096 -keyout /opt/ssl/key.pem -out /opt/ssl/cert.pem -days 1095 -subj "/CN=xo-appliance"
+
+- name: Install Xen Orchestra
+  shell: /opt/XenOrchestraInstallerUpdater/xo-install.sh --install
+
+- name: Run webcheck
+  shell: curl -s -k -o /dev/null -w "%{http_code}" https://127.0.0.1/signin
+  register: http_statuscode
+
+- fail:
+    msg: "Status code not 200, exiting"
+  when: http_statuscode.stdout != "200"
+
+- name: Stop xo-server
+  service:
+    name: xo-server
+    state: stopped
+    enabled: no
+
+- name: We don't need /opt/ssl anymore
+  file:
+    path: /opt/ssl
+    state: absent
+
+- name: Change motd
+  copy:
+    src: motd
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Delete logs directory
+  file:
+    path: /opt/XenOrchestraInstallerUpdater/logs
+    state: absent
+
+# whole interfaces file is generated when VM is started for the first time, so remove it
+- name: Remove network configuration
+  file:
+    path: /etc/network/interfaces
+    state: absent
+
+# password is statically set to "xopass" here
+- name: Create xo user
+  user:
+    name: xo
+    password: $6$Nk8O3buRLh6f5XDA$XwgIrKlXsQVuxeKNVvSiYwxZH5sSoQJyYX9Spm3tGMzXPoaDgXjbe2PvnBA42LvxLA4R/1BUKdeQCj0ik/Z.v/
+    shell: /bin/bash
+
+# xo user will have full sudo access without password prompt
+- name: Create sudoers config for xo user
+  copy:
+    src: xo.sudo
+    dest: /etc/sudoers.d/xo
+
+# force xo user to change password on first login
+- name: Expire xo users password
+  shell: passwd -e xo
+
+# we don't want to allow rootlogin from console either.
+- name: Disable root password login
+  user:
+    name: root
+    password: '!'
+
+# this is a dummy file that makes server-setup.service to trigger when appliance started for the first time
+- name: Create server-setup empty file
+  shell: touch /opt/server-setup
+
+# files that server-setup.service will execute when appliance is started for the first time
+- name: Copy server-setup files to /usr/local/bin
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - certificate-setup.sh
+    - common.sh
+    - network-setup.sh
+    - server-setup.sh
+    - ssh-setup.sh
+
+- name: Copy server-setup to /etc/systemd/system/server-setup.service
+  copy:
+    src: server-setup.service
+    dest: /etc/systemd/system/server-setup.service
+
+- name: Run systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
+
+- name: Copy cleanup script
+  copy:
+    src: cleanup.sh
+    dest: /cleanup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+# this cleans up logs and other possibly sensitive/unique data we don't want to preserve
+- name: Run cleanup script
+  shell: /cleanup.sh

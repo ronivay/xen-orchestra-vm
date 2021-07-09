@@ -1,0 +1,27 @@
+---
+
+- name: Shutdown VM
+  shell: xe vm-shutdown vm="{{ vmuuid.stdout }}"
+
+- name: Wait for VM to shutdown
+  shell: xe vm-list uuid="{{ vmuuid.stdout }}" | grep power-state | awk '{print $NF}'
+  register: vmstate
+  until: vmstate.stdout == "halted"
+  retries: 30
+  delay: 10
+
+- name: Get VIF uuid
+  shell: xe vif-list vm-uuid="{{ vmuuid.stdout }}" | grep ^uuid | awk '{print $NF}'
+  register: vifuuid
+
+# we remove VIF because it's recreated by xo-appliance.sh script when appliance is deployed to another xenserver/xcp-ng host
+- name: Remove VIF
+  shell: xe vif-destroy uuid="{{ vifuuid.stdout }}"
+
+# we export and copy xva file over to webserver which then automatically copies it to correct location
+- name: Export VM
+  shell: xe vm-export uuid="{{ vmuuid.stdout }}" filename= | ssh "{{ frontip }}" "cat - > /opt/xo-builds/latest.xva"
+
+# we don't need the built VM after it's been exported, so remove it
+- name: Remove VM after export
+  shell: xe vm-uninstall uuid="{{ vmuuid.stdout }}" force=true
