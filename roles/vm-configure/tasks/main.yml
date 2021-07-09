@@ -14,9 +14,9 @@
     name: xo-appliance
 
 # stop logging already, we don't want to preserve logs anyway
-- name: Stop rsyslogd
+- name: Stop rsyslog
   service:
-    name: rsyslogd
+    name: rsyslog
     state: stopped
 
 - name: Update and upgrade apt packages
