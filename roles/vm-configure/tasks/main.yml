@@ -117,11 +117,11 @@
     name: root
     password: '!'
 
-# this is a dummy file that makes server-setup.service to trigger when appliance started for the first time
+# this is a dummy file that makes xo-appliance-setup.service to trigger when appliance started for the first time
 - name: Create server-setup empty file
   shell: touch /opt/server-setup
 
-# files that server-setup.service will execute when appliance is started for the first time
+# files that xo-appliance-setup.service will execute when appliance is started for the first time
 - name: Copy server-setup files to /usr/local/bin
   copy:
     src: "{{ item }}"
@@ -133,13 +133,13 @@
     - certificate-setup.sh
     - common.sh
     - network-setup.sh
-    - server-setup.sh
+    - xo-appliance-setup.sh
     - ssh-setup.sh
 
-- name: Copy server-setup to /etc/systemd/system/server-setup.service
+- name: Copy xo-appliance-setup to /etc/systemd/system/xo-appliance-setup.service
   copy:
-    src: server-setup.service
-    dest: /etc/systemd/system/server-setup.service
+    src: xo-appliance-setup.service
+    dest: /etc/systemd/system/xo-appliance-setup.service
 
 - name: Run systemctl daemon-reload
   systemd:
@@ -147,12 +147,12 @@
 
 - name: Copy cleanup script
   copy:
-    src: cleanup.sh
-    dest: /cleanup.sh
+    src: appliance-cleanup.sh
+    dest: /appliance-cleanup.sh
     owner: root
     group: root
     mode: '0755'
 
 # this cleans up logs and other possibly sensitive/unique data we don't want to preserve
 - name: Run cleanup script
-  shell: /cleanup.sh
+  shell: /appliance-cleanup.sh

@@ -9,10 +9,10 @@ Before=systemd-user-sessions.service
 
 [Service]
 Type=oneshot
-ExecStart=-/usr/local/bin/server-setup.sh
+ExecStart=-/usr/local/bin/xo-appliance-setup.sh
 ExecStartPost=-/bin/rm -f /opt/server-setup
-ExecStartPost=-/bin/rm -f /usr/local/bin/server-setup.sh
-ExecStartPost=-/bin/rm -f /etc/systemd/system/server-setup.service
+ExecStartPost=-/bin/rm -f /usr/local/bin/xo-appliance-setup.sh
+ExecStartPost=-/bin/rm -f /etc/systemd/system/xo-appliance-setup.service
 TimeoutSec=120
 
 [Install]
