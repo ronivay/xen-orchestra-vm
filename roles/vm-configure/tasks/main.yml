@@ -145,6 +145,11 @@
   systemd:
     daemon_reload: yes
 
+- name: Enable xo-appliance-setup service
+  service:
+    name: xo-appliance-setup
+    enabled: yes
+
 - name: Copy cleanup script
   copy:
     src: appliance-cleanup.sh
