@@ -16,6 +16,7 @@
         name: "{{ templateip }}"
         groups:
           - xovm
+        ansible_python_interpreter: /usr/bin/python3
 
 - name: Create VM from template
   hosts: xenserver

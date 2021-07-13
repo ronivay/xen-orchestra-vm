@@ -1,6 +1,6 @@
 ---
 
-# template is plain debian 10 with predefined ip-address and SSH-key for this automation.
+# template is minimal installation of debian 10 with predefined ip-address and SSH-key for this automation.
 # it has xen-tools and cloud-initramfs-growroot package installed for automatic disk resize during reboot
 # whole disk is as one partition and no swap added
 
@@ -13,6 +13,13 @@
   hostname:
     name: xo-appliance
 
+- name: Set hostname to /etc/hosts
+  shell: echo "127.0.0.1 xo-appliance" >> /etc/hosts
+
+- name: Set timezone
+  timezone:
+    name: UTC
+
 # stop logging already, we don't want to preserve logs anyway
 - name: Stop rsyslog
   service:
@@ -24,9 +31,9 @@
     upgrade: yes
     update_cache: yes
 
-- name: Install resolvconf and curl
+- name: Install needed packages
   apt:
-    name: ['resolvconf', 'curl']
+    name: ['resolvconf', 'curl', 'openssl', 'git', 'sudo']
     state: present
 
 - name: Clone XenOrchestraInstallerUpdater

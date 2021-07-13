@@ -21,12 +21,20 @@ rm -rf /tmp/* /var/tmp/*
 rm -rf /var/lib/xo-server/data
 rm -rf /var/lib/redis/dump.rdb
 
-# clear apt cache
+# clear caches
 apt-get clean
+yarn cache clean --all
 
 # make sure machine-id is regenerated on reboot
 [ -f /etc/machine-id ] && : > /etc/machine-id
 [ ! -L /var/lib/dbus/machine-id ] && ln -sf /etc/machine-id /var/lib/dbus/machine-id
+
+# zero unused disk blocks to reduce image size
+FREE=$(df / | tail -1 | awk '{print $4}')
+ZEROFILL=$(( (FREE - 10000)/1000 ))
+dd if=/dev/zero of=/zero.file bs=1M count=$ZEROFILL 2> /dev/null
+sync
+rm -f /zero.file
 
 # remove this script
 rm "$0"
