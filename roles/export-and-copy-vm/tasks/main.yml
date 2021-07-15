@@ -20,7 +20,7 @@
 
 # we export and copy xva file over to webserver which then automatically copies it to correct location
 - name: Export VM
-  shell: xe vm-export uuid="{{ vmuuid.stdout }}" filename= | ssh "{{ frontip }}" "cat - > /opt/xo-builds/latest.xva"
+  shell: xe vm-export uuid="{{ vmuuid.stdout }}" filename= compress=true| ssh "{{ frontip }}" "cat - > /opt/xo-builds/latest.xva.gz"
 
 # we don't need the built VM after it's been exported, so remove it
 - name: Remove VM after export
