@@ -2,7 +2,7 @@
 
 # template name is statically assigned in the environment where this is built
 - name: Deploy VM from template
-  shell: xe vm-install template="xo-appliance preinstall" new-name-label=xo-appliance
+  shell: xe vm-install template="xo-vm preinstall" new-name-label=xo-ce
   register: vmuuid
 
 - name: Start VM

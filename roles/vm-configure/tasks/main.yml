@@ -11,10 +11,10 @@
 
 - name: Set hostname
   hostname:
-    name: xo-appliance
+    name: xo-ce
 
 - name: Set hostname to /etc/hosts
-  shell: echo "127.0.0.1 xo-appliance" >> /etc/hosts
+  shell: echo "127.0.0.1 xo-ce" >> /etc/hosts
 
 - name: Set timezone
   timezone:
@@ -57,8 +57,8 @@
     group: root
     mode: '0600'
 
-- name: Create SSL-certificate (recreated on first reboot of appliance)
-  shell: openssl req -nodes -x509 -newkey rsa:4096 -keyout /opt/ssl/key.pem -out /opt/ssl/cert.pem -days 1095 -subj "/CN=xo-appliance"
+- name: Create SSL-certificate (recreated on first reboot of vm)
+  shell: openssl req -nodes -x509 -newkey rsa:4096 -keyout /opt/ssl/key.pem -out /opt/ssl/cert.pem -days 1095 -subj "/CN=xo-ce"
 
 - name: Install Xen Orchestra
   shell: /opt/XenOrchestraInstallerUpdater/xo-install.sh --install
@@ -124,11 +124,11 @@
     name: root
     password: '!'
 
-# this is a dummy file that makes xo-appliance-setup.service to trigger when appliance started for the first time
+# this is a dummy file that makes xo-vm-setup.service to trigger when VM started for the first time
 - name: Create server-setup empty file
   shell: touch /opt/server-setup
 
-# files that xo-appliance-setup.service will execute when appliance is started for the first time
+# files that xo-vm-setup.service will execute when VM is started for the first time
 - name: Copy server-setup files to /usr/local/bin
   copy:
     src: "{{ item }}"
@@ -140,31 +140,31 @@
     - certificate-setup.sh
     - common.sh
     - network-setup.sh
-    - xo-appliance-setup.sh
+    - xo-vm-setup.sh
     - ssh-setup.sh
 
-- name: Copy xo-appliance-setup to /etc/systemd/system/xo-appliance-setup.service
+- name: Copy xo-vm-setup to /etc/systemd/system/xo-vm-setup.service
   copy:
-    src: xo-appliance-setup.service
-    dest: /etc/systemd/system/xo-appliance-setup.service
+    src: xo-vm-setup.service
+    dest: /etc/systemd/system/xo-vm-setup.service
 
 - name: Run systemctl daemon-reload
   systemd:
     daemon_reload: yes
 
-- name: Enable xo-appliance-setup service
+- name: Enable xo-vm-setup service
   service:
-    name: xo-appliance-setup
+    name: xo-vm-setup
     enabled: yes
 
 - name: Copy cleanup script
   copy:
-    src: appliance-cleanup.sh
-    dest: /appliance-cleanup.sh
+    src: vm-cleanup.sh
+    dest: /vm-cleanup.sh
     owner: root
     group: root
     mode: '0755'
 
 # this cleans up logs and other possibly sensitive/unique data we don't want to preserve
 - name: Run cleanup script
-  shell: /appliance-cleanup.sh
+  shell: /vm-cleanup.sh

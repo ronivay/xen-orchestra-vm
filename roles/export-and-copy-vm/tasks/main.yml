@@ -14,7 +14,7 @@
   shell: xe vif-list vm-uuid="{{ vmuuid.stdout }}" | grep ^uuid | awk '{print $NF}'
   register: vifuuid
 
-# we remove VIF because it's recreated by xo-appliance.sh script when appliance is deployed to another xenserver/xcp-ng host
+# we remove VIF because it's recreated by xo-vm.sh script when VM is deployed to another xenserver/xcp-ng host
 - name: Remove VIF
   shell: xe vif-destroy uuid="{{ vifuuid.stdout }}"
 

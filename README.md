@@ -1,5 +1,5 @@
-# Xen Orchestra appliance
+# Xen Orchestra VM image
 
-Ansible playbook for creating Xen Orchestra appliance used by xo-appliance.sh script in: https://github.com/ronivay/XenOrchestraInstallerUpdater
+Ansible playbook for creating Xen Orchestra image used by xo-vm-import.sh script in: https://github.com/ronivay/XenOrchestraInstallerUpdater
 
-This playbook is not useful as it is, this repository is used to document the procedure how appliance is built and to offer a possiblity to suggest improvements.
+This playbook is not useful as it is, this repository is used to document the procedure how image is built and to offer a possiblity to suggest improvements.
