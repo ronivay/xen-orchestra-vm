@@ -1,7 +1,7 @@
 ---
 
-# template is minimal installation of debian 10 with predefined ip-address and SSH-key for this automation.
-# it has xen-tools and cloud-initramfs-growroot package installed for automatic disk resize during reboot
+# template is minimal installation of debian 11 with predefined ip-address and SSH-key for this automation.
+# it has xen-tools, resolvconf and cloud-initramfs-growroot package installed for automatic disk resize during reboot
 # whole disk is as one partition and no swap added
 
 - name: wait for SSH
@@ -12,6 +12,7 @@
 - name: Set hostname
   hostname:
     name: xo-ce
+    use: debian
 
 - name: Set hostname to /etc/hosts
   shell: echo "127.0.0.1 xo-ce" >> /etc/hosts
@@ -33,7 +34,7 @@
 
 - name: Install needed packages
   apt:
-    name: ['resolvconf', 'curl', 'openssl', 'git', 'sudo']
+    name: ['curl', 'openssl', 'git', 'sudo']
     state: present
 
 - name: Clone XenOrchestraInstallerUpdater
