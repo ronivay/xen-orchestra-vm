@@ -1,0 +1,12 @@
+[settings]
+python.github_attestations = false
+
+[tools]
+packer = "1.10.2"
+ansible-core = "2.19.9"
+"pypi:ansible-lint" = "latest"
+python = "3.12.2"
+uv = "latest"
+
+[env]
+PYTHONUNBUFFERED = "1"

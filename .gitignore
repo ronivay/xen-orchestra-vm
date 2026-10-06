@@ -1,0 +1,4 @@
+packer/secrets.auto.pkrvars.hcl
+xo-ce-artifact
+xo-ce-final
+bin/process-template.sh
