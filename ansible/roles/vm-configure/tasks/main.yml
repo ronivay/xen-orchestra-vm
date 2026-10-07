@@ -1,10 +1,6 @@
 ---
 
-# template is minimal installation of debian 11 with predefined ip-address and SSH-key for this automation.
-# it has xen-tools, resolvconf and cloud-initramfs-growroot package installed for automatic disk resize during reboot
-# whole disk is as one partition and no swap added
-
-- name: wait for SSH
+- name: Wait for SSH
   wait_for_connection:
     delay: 60
     timeout: 300
@@ -18,19 +14,24 @@
   shell: echo "127.0.0.1 xo-ce" >> /etc/hosts
 
 - name: Set timezone
-  timezone:
+  community.general.timezone:
     name: UTC
 
-# stop logging already, we don't want to preserve logs anyway
-- name: Stop rsyslog
-  service:
-    name: rsyslog
-    state: stopped
+- name: Add custom grub cmdline
+  copy:
+    src: custom_cmdline.cfg
+    dest: /etc/default/grub.d/custom_cmdline.cfg
+    owner: root
+    group: root
+    mode: '644'
+
+- name: Update grub
+  shell: 'update-grub'
 
 - name: Update and upgrade apt packages
   apt:
-    upgrade: yes
-    update_cache: yes
+    upgrade: true
+    update_cache: true
 
 - name: Install needed packages
   apt:
@@ -76,7 +77,7 @@
   service:
     name: xo-server
     state: stopped
-    enabled: no
+    enabled: false
 
 - name: We don't need /opt/ssl anymore
   file:
@@ -114,6 +115,9 @@
   copy:
     src: xo.sudo
     dest: /etc/sudoers.d/xo
+    owner: root
+    group: root
+    mode: '644'
 
 # force xo user to change password on first login
 - name: Expire xo users password
@@ -148,15 +152,38 @@
   copy:
     src: xo-vm-setup.service
     dest: /etc/systemd/system/xo-vm-setup.service
+    owner: root
+    group: root
+    mode: '644'
 
 - name: Run systemctl daemon-reload
   systemd:
-    daemon_reload: yes
+    daemon_reload: true
 
 - name: Enable xo-vm-setup service
   service:
     name: xo-vm-setup
-    enabled: yes
+    enabled: true
+
+- name: Disable sshd service to avoid host key errors on first start
+  service:
+    name: ssh
+    enabled: false
+
+- name: Find temporary files
+  find:
+    file_type: any
+    paths:
+      - /tmp
+      - /var/tmp
+    patterns: '*'
+  register: temp_files
+
+- name: Remove temporary files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ temp_files.files }}"
 
 - name: Copy cleanup script
   copy:
@@ -169,3 +196,9 @@
 # this cleans up logs and other possibly sensitive/unique data we don't want to preserve
 - name: Run cleanup script
   shell: /vm-cleanup.sh
+
+- name: Fill disk with zeroes to reduce final image size
+  shell: dd if=/dev/zero of=/zero.file bs=1M oflag=direct || rm -f /zero.file
+
+- name: Sync disk
+  shell: sync

@@ -1,0 +1,25 @@
+name: Test
+
+on:
+  push:
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install tools with mise
+        uses: jdx/mise-action@v2
+        with:
+          experimental: true
+
+      - name: Install Lefthook
+        run: |
+          curl -1sLf 'https://dl.cloudsmith.io/public/evilmartians/lefthook/setup.deb.sh' | sudo -E bash
+          sudo apt-get install lefthook
+
+      - name: Run Lefthook pre-commit actions
+        run: lefthook run pre-commit --all-files

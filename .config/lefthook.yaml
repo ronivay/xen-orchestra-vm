@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    packer-prep-and-validate:
+      run: |
+        packer fmt -check -diff ./packer
+        packer init ./packer
+        packer validate ./packer
+
+    ansible-lint:
+      glob: "*.yml"
+      run: |
+        ansible-galaxy collection install -r ansible/requirements.yml
+        ansible-lint --offline {staged_files}

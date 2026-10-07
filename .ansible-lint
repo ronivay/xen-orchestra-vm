@@ -1,0 +1,12 @@
+skip_list:
+    - command-instead-of-shell
+    - no-changed-when
+    - no-handler
+    - experimental
+    - command-instead-of-module
+    - fqcn[action-core]
+    - fqcn[action]
+    - ignore-errors
+    - package-latest
+    - name[missing]
+    - latest[git]

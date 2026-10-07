@@ -1,0 +1,7 @@
+---
+
+- name: Configure VM
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: vm-configure
